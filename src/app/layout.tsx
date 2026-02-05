@@ -1,21 +1,21 @@
 import type { ReactNode } from "react";
+import { AuthProvider } from "@/context/AuthContext";
+import "./globals.css";
+import SignInPage from "./signin/page";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        {children}
+        <AuthProvider>
+          {children}
 
-        <footer style={{ marginTop: "4rem", padding: "2rem", fontSize: "0.85rem", color: "#555" }}>
-          <p>
-            Earth Carbon Registry tracks low-carbon actions and carbon-credit
-            preparedness. Credit issuance is subject to registry methodologies,
-            MRV requirements, and host-country authorization.
-          </p>
-          <p>
-            ESG actions do not automatically qualify as carbon credits.
-          </p>
-        </footer>
+          <script
+            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+            async
+            defer
+          ></script>
+        </AuthProvider>
       </body>
     </html>
   );
