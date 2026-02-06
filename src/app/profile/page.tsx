@@ -1,20 +1,15 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import React from "react";
 import Navbar from "@/components/Navbar";
 import ActionsPage from "@/components/AddNewActions";
+import GoogleMapVIew from "@/components/GoogleMapVIew";
+import { useProfile } from "@/hooks/useProfile";
+import { useActionRecordTable } from "@/hooks/useActionRecordTable";
 
 export default function ProfilePage() {
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/signin");
-    }
-  }, [user, loading, router]);
+  const { user, loading } = useProfile();
+  const { actions } = useActionRecordTable();
 
   if (loading) {
     return (
@@ -37,6 +32,7 @@ export default function ProfilePage() {
     <>
       <Navbar />
       <ActionsPage />
+      <GoogleMapVIew locations={actions} />
     </>
   );
 }

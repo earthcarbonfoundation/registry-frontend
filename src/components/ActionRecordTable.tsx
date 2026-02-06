@@ -1,26 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { db } from "@/firebaseConfig";
+import React from "react";
 import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  deleteDoc,
-  doc,
-  Timestamp,
-} from "firebase/firestore";
-import { useAuth } from "@/context/AuthContext";
-
-interface ActionRecord {
-  id: string;
-  actionType: string;
-  quantity: number;
-  unit: string;
-  address: string;
-  createdAt: Timestamp;
-}
+  useActionRecordTable,
+  ActionRecord,
+} from "@/hooks/useActionRecordTable";
+import { Timestamp } from "firebase/firestore";
 
 interface ActionRecordTableProps {
   onEdit: (record: ActionRecord) => void;
@@ -37,67 +22,39 @@ const ACTION_LABELS: Record<string, string> = {
   tree_plantation: "Tree Plantation",
 };
 
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import { useState } from "react";
+import DeleteIcon from "./svg/DeleteIcon";
+import EditIcon from "./svg/EditIcon";
+import ActionNotFoundIcon from "./svg/ActionNotFoundIcon";
+
 export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
-  const { user, loading: authLoading } = useAuth();
-  const [actions, setActions] = useState<ActionRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    actions,
+    loading,
+    currentItems,
+    currentPage,
+    totalPages,
+    handlePageChange,
+    handleDelete,
+  } = useActionRecordTable();
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2;
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [actionToDelete, setActionToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    // If auth is still loading, wait.
-    if (authLoading) return;
+  const handleDeleteClick = (id: string) => {
+    setActionToDelete(id);
+    setDeleteModalOpen(true);
+  };
 
-    // If auth finished but no user, stop loading (show empty or restricted).
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-
-    const q = query(
-      collection(db, "carbon_registry_actions"),
-      where("userId", "==", user.uid),
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const fetchedActions = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as ActionRecord[];
-
-        // Sort client-side to avoid compound index requirement
-        fetchedActions.sort((a, b) => {
-          const timeA = a.createdAt?.toMillis() || 0;
-          const timeB = b.createdAt?.toMillis() || 0;
-          return timeB - timeA; // Descending order
-        });
-
-        setActions(fetchedActions);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching actions:", error);
-        setLoading(false);
-      },
-    );
-
-    return () => unsubscribe();
-  }, [user, authLoading]);
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this action?")) {
-      try {
-        await deleteDoc(doc(db, "carbon_registry_actions", id));
-      } catch (error) {
-        console.error("Error deleting document: ", error);
-        alert("Failed to delete action.");
-      }
+  const confirmDelete = async () => {
+    if (actionToDelete) {
+      setIsDeleting(true);
+      await handleDelete(actionToDelete);
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+      setActionToDelete(null);
     }
   };
 
@@ -114,18 +71,6 @@ export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
     });
   };
 
-  // Pagination Logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = actions.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(actions.length / itemsPerPage);
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center p-8">
@@ -138,19 +83,7 @@ export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
     return (
       <div className="bg-white/50 border-2 border-dashed border-gray-300 rounded-[2.5rem] p-20 flex flex-col items-center justify-center text-center mt-6">
         <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-300 mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-          </svg>
+          <ActionNotFoundIcon />
         </div>
         <h3 className="text-gray-500 font-semibold text-lg">No actions yet</h3>
         <p className="text-gray-400 text-sm max-w-[240px] mt-1">
@@ -162,73 +95,75 @@ export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
 
   return (
     <div className="space-y-6 mt-6">
-      {/* Desktop Table View */}
+      {/* Desktop Grid View */}
       <div className="hidden md:block bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100/50">
-                <th className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Action Type
-                </th>
-                <th className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Quantity
-                </th>
-                <th className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Unit
-                </th>
-                <th className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Address
-                </th>
-                <th className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Timestamp
-                </th>
-                <th className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {currentItems.map((action) => (
-                <tr
-                  key={action.id}
-                  className="hover:bg-gray-50/50 transition-colors group"
+        <div className="min-w-full">
+          {/* Header */}
+          <div className="grid grid-cols-[1.5fr_1fr_1fr_2fr_1.5fr_1fr] bg-gray-50/50 border-b border-gray-100/50">
+            <div className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Action Type
+            </div>
+            <div className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Quantity
+            </div>
+            <div className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Unit
+            </div>
+            <div className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Address
+            </div>
+            <div className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Timestamp
+            </div>
+            <div className="py-5 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">
+              Action
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="divide-y divide-gray-50">
+            {currentItems.map((action) => (
+              <div
+                key={action.id}
+                className="grid grid-cols-[1.5fr_1fr_1fr_2fr_1.5fr_1fr] hover:bg-gray-50/50 transition-colors group items-center"
+              >
+                <div className="py-5 px-6 text-sm font-semibold text-gray-700">
+                  {ACTION_LABELS[action.actionType] || action.actionType}
+                </div>
+                <div className="py-5 px-6 text-sm font-medium text-gray-600">
+                  {action.quantity}
+                </div>
+                <div className="py-5 px-6 text-sm text-gray-500">
+                  {action.unit}
+                </div>
+                <div
+                  className="py-5 px-6 text-sm text-gray-500 truncate"
+                  title={action.address}
                 >
-                  <td className="py-5 px-6 text-sm font-semibold text-gray-700">
-                    {ACTION_LABELS[action.actionType] || action.actionType}
-                  </td>
-                  <td className="py-5 px-6 text-sm font-medium text-gray-600">
-                    {action.quantity}
-                  </td>
-                  <td className="py-5 px-6 text-sm text-gray-500">
-                    {action.unit}
-                  </td>
-                  <td className="py-5 px-6 text-sm text-gray-500 max-w-[200px] truncate">
-                    {action.address}
-                  </td>
-                  <td className="py-5 px-6 text-sm text-gray-400 whitespace-nowrap">
-                    {formatDate(action.createdAt)}
-                  </td>
-                  <td className="py-5 px-6 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => onEdit(action)}
-                        className="px-4 py-2 bg-gray-500 text-white text-xs font-semibold rounded-lg hover:bg-gray-600 transition-colors shadow-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(action.id)}
-                        className="px-4 py-2 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition-colors shadow-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  {action.address}
+                </div>
+                <div className="py-5 px-6 text-sm text-gray-400 whitespace-nowrap">
+                  {formatDate(action.createdAt)}
+                </div>
+                <div className="py-5 px-6 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => onEdit(action)}
+                      className="px-4 py-2 bg-gray-500 text-white text-xs font-semibold rounded-lg hover:bg-gray-600 transition-colors shadow-sm"
+                    >
+                      <EditIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(action.id)}
+                      className="px-4 py-2 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition-colors shadow-sm"
+                    >
+                      <DeleteIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -254,21 +189,6 @@ export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
             </div>
 
             <div className="flex items-start gap-2 text-sm text-gray-500 bg-gray-50 p-3 rounded-xl">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mt-0.5 shrink-0"
-              >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
               <span className="truncate">{action.address}</span>
             </div>
 
@@ -277,13 +197,13 @@ export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
                 onClick={() => onEdit(action)}
                 className="py-2.5 bg-gray-100 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors"
               >
-                Edit
+                <EditIcon className="h-4 w-4 text-gray-600" />
               </button>
               <button
-                onClick={() => handleDelete(action.id)}
+                onClick={() => handleDeleteClick(action.id)}
                 className="py-2.5 bg-red-50 text-red-500 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"
               >
-                Delete
+                <DeleteIcon className="h-4 w-4 text-red-500" />
               </button>
             </div>
           </div>
@@ -300,21 +220,7 @@ export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
               ? "bg-gray-50 text-gray-300 cursor-not-allowed"
               : "bg-white text-gray-600 hover:bg-gray-50"
           }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
+        ></button>
         <span className="text-sm font-semibold text-gray-600">
           Page {currentPage} of {totalPages}
         </span>
@@ -326,22 +232,15 @@ export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
               ? "bg-gray-50 text-gray-300 cursor-not-allowed"
               : "bg-white text-gray-600 hover:bg-gray-50"
           }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
+        ></button>
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }
