@@ -1,31 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import PlusIcon from "./svg/PlusIcon";
 import CloseButtonIcon from "./svg/CloseButtonIcon";
 import DropDownIcon from "./svg/DropDownIcon";
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-const google = typeof window !== "undefined" ? window.google : null;
-
-const ACTION_TYPES = [
-  { value: "solar_rooftop", label: "Solar Rooftop", unit: "kW" },
-  { value: "swh", label: "Solar Water Heater", unit: "liters" },
-  { value: "rwh", label: "Rainwater Harvesting", unit: "m³" },
-  { value: "waterless_urinal", label: "Waterless Urinal", unit: "units" },
-  {
-    value: "wastewater_recycling",
-    label: "Wastewater Recycling",
-    unit: "m³/day",
-  },
-  { value: "biogas", label: "Biogas (Food Waste)", unit: "kg/day" },
-  { value: "led_replacement", label: "LED Replacement", unit: "bulbs" },
-  { value: "tree_plantation", label: "Tree Plantation", unit: "trees" },
-];
+import { useActionModal, ACTION_TYPES } from "../hooks/useActionModal";
+import LocationAutocomplete from "./LocationAutocomplete";
 
 interface ActionModalProps {
   isOpen: boolean;
@@ -41,106 +21,13 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
   isSubmitting = false,
   initialData,
 }) => {
-  const [formData, setFormData] = useState({
-    actionType: "",
-    quantity: "",
-    unit: "",
-    address: "",
-  });
+  const { formik } = useActionModal({ initialData, onSubmit, isOpen });
 
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        actionType: initialData.actionType || "",
-        quantity: initialData.quantity || "",
-        unit: initialData.unit || "",
-        address: initialData.address || "",
-      });
-    } else {
-      setFormData({
-        actionType: "",
-        quantity: "",
-        unit: "",
-        address: "",
-      });
-    }
-  }, [initialData, isOpen]);
-
-  useEffect(() => {
-    if (formData.actionType) {
-      const selectedType = ACTION_TYPES.find(
-        (type) => type.value === formData.actionType,
-      );
-      if (selectedType) {
-        setFormData((prev) => ({ ...prev, unit: selectedType.unit }));
-      }
-    }
-  }, [formData.actionType]);
-
-  const fetchSuggestions = (input: string) => {
-    if (!input || typeof window === "undefined" || !window.google) {
-      setSuggestions([]);
-      return;
-    }
-
-    try {
-      const google = window.google;
-      const service = new google.maps.places.AutocompleteService();
-      service.getPlacePredictions(
-        { input, types: ["(cities)"] },
-        (predictions: any[] | null, status: any) => {
-          if (
-            status === google.maps.places.PlacesServiceStatus.OK &&
-            predictions
-          ) {
-            setSuggestions(predictions);
-            setShowSuggestions(true);
-          } else {
-            setSuggestions([]);
-          }
-        },
-      );
-    } catch (e) {
-      console.error("Google Maps Autocomplete Error:", e);
-      setSuggestions([]);
-    }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (name === "address") {
-      fetchSuggestions(value);
-    }
-  };
-
-  const handleSelectSuggestion = (suggestion: any) => {
-    setFormData((prev) => ({ ...prev, address: suggestion.description }));
-    setSuggestions([]);
-    setShowSuggestions(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      // Create a timeout promise to prevent indefinite hanging
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Request timed out")), 15000);
-      });
-
-      // Race the submit against the timeout
-      await Promise.race([onSubmit(formData), timeoutPromise]);
-
-      setFormData({ actionType: "", quantity: "", unit: "", address: "" });
-    } catch (error) {
-      console.error("Submission error in modal:", error);
-      // Constructive error handling is done by parent, but we catch here to prevent unhandled rejection
+  const handlePlaceSelect = (location: any) => {
+    formik.setFieldValue("address", location.address);
+    if (location.lat && location.lng) {
+      formik.setFieldValue("lat", location.lat);
+      formik.setFieldValue("lng", location.lng);
     }
   };
 
@@ -152,7 +39,7 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[2rem] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 relative"
+        className="bg-white rounded-[2rem] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-gray-100 duration-300 scale-100 relative max-h-[90vh] "
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -176,7 +63,7 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={formik.handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label
                 htmlFor="actionType"
@@ -188,10 +75,14 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
                 <select
                   id="actionType"
                   name="actionType"
-                  className="w-full px-5 py-4 rounded-xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:border-blue-400 transition-all duration-200 outline-none appearance-none font-medium text-gray-700 cursor-pointer"
-                  value={formData.actionType}
-                  onChange={handleChange}
-                  required
+                  className={`w-full px-5 py-4 rounded-xl border bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none appearance-none font-medium text-gray-700 cursor-pointer ${
+                    formik.touched.actionType && formik.errors.actionType
+                      ? "border-red-400 focus:border-red-400"
+                      : "border-gray-100 focus:border-blue-400"
+                  }`}
+                  value={formik.values.actionType}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                 >
                   <option value="" disabled className="text-gray-400">
                     Select an action
@@ -210,6 +101,11 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
                   <DropDownIcon />
                 </div>
               </div>
+              {formik.touched.actionType && formik.errors.actionType && (
+                <div className="text-red-500 text-xs ml-1">
+                  {formik.errors.actionType}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -224,13 +120,22 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
                   id="quantity"
                   name="quantity"
                   type="number"
-                  className="w-full px-5 py-4 rounded-xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:border-blue-400 transition-all duration-200 outline-none font-medium text-gray-700 placeholder:text-gray-300"
-                  value={formData.quantity}
-                  onChange={handleChange}
+                  className={`w-full px-5 py-4 rounded-xl border bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none font-medium text-gray-700 placeholder:text-gray-300 ${
+                    formik.touched.quantity && formik.errors.quantity
+                      ? "border-red-400 focus:border-red-400"
+                      : "border-gray-100 focus:border-blue-400"
+                  }`}
+                  value={formik.values.quantity}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   placeholder="0.00"
                   step="0.01"
-                  required
                 />
+                {formik.touched.quantity && formik.errors.quantity && (
+                  <div className="text-red-500 text-xs ml-1">
+                    {formik.errors.quantity}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -240,8 +145,8 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
                 >
                   Unit
                 </label>
-                <div className="w-full px-5 py-4 rounded-xl border border-gray-50 bg-gray-100/50 text-gray-400 font-bold flex items-center justify-center text-[10px] tracking-widest uppercase">
-                  {formData.unit || "---"}
+                <div className="w-full px-5 py-4 rounded-xl border border-gray-50 bg-gray-100/50 text-gray-400 font-bold flex items-center justify-center text-[10px] tracking-widest uppercase h-[58px]">
+                  {formik.values.unit || "---"}
                 </div>
               </div>
             </div>
@@ -254,33 +159,23 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
                 Address
               </label>
               <div className="relative group/input">
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  className="w-full px-5 py-4 rounded-xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:border-blue-400 transition-all duration-200 outline-none font-medium text-gray-700 placeholder:text-gray-300"
-                  value={formData.address}
-                  onChange={handleChange}
+                <LocationAutocomplete
+                  value={formik.values.address}
+                  onChange={formik.handleChange}
+                  onPlaceSelect={handlePlaceSelect}
                   placeholder="Start typing a city..."
-                  required
-                  autoComplete="off"
+                  name="address"
+                  error={formik.touched.address && formik.errors.address}
                 />
-
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-100 rounded-xl mt-2 shadow-xl z-[100] overflow-hidden max-h-60 overflow-y-auto">
-                    {suggestions.map((suggestion) => (
-                      <div
-                        key={suggestion.place_id}
-                        className="px-5 py-3 hover:bg-gray-50 cursor-pointer transition-colors text-sm text-gray-600 border-b border-gray-50 last:border-0"
-                        onClick={() => handleSelectSuggestion(suggestion)}
-                      >
-                        {suggestion.description}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
+              {formik.touched.address && formik.errors.address && (
+                <div className="text-red-500 text-xs ml-1">
+                  {formik.errors.address}
+                </div>
+              )}
             </div>
+
+            {/* Google Map View */}
 
             <div className="flex gap-3 pt-6">
               <button

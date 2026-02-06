@@ -1,28 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import React from "react";
 import GoogleIcon from "@/components/svg/GoogleIcon";
+import { useSignIn } from "@/hooks/useSignIn";
 
 export default function SignInPage() {
-  const { user, loginWithGoogle, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (user && !loading) {
-      router.push("/profile");
-    }
-  }, [user, loading, router]);
-
-  const handleSignIn = async () => {
-    try {
-      await loginWithGoogle();
-      // Redirect is handled by the useEffect above
-    } catch (error) {
-      console.error("Sign in failed:", error);
-    }
-  };
+  const { loading, handleSignIn } = useSignIn();
 
   if (loading) {
     return (

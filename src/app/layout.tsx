@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
-import SignInPage from "./signin/page";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -9,12 +10,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <AuthProvider>
           {children}
-
-          <script
-            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
-            async
-            defer
-          ></script>
+          <ToastContainer position="top-right" autoClose={3000} />
         </AuthProvider>
       </body>
     </html>
