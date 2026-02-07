@@ -1,6 +1,5 @@
 import React from "react";
 import CloseButtonIcon from "./svg/CloseButtonIcon";
-import DeleteIcon from "./svg/DeleteIcon";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -23,42 +22,62 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex justify-center items-center z-[1000] p-4 transition-all duration-300"
+      className='fixed inset-0 bg-gray-900/10 backdrop-blur-sm flex justify-center items-center z-[1000] p-4 transition-all duration-300'
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[2rem] w-full max-w-sm shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 relative p-6 text-center"
+        className='bg-white rounded-[2rem] w-full max-w-sm shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 relative'
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-red-500">
-        
-        </div>
-
-        <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
-        <p className="text-gray-500 text-sm mb-8">{message}</p>
-
-        <div className="grid grid-cols-2 gap-3">
+        {/* Header with Delete Title and Close Button */}
+        <div className='flex items-center justify-between px-8 pt-8 pb-6 border-b border-gray-100'>
+          <h2 className='text-xl font-semibold text-gray-800 tracking-tight'>
+            Delete
+          </h2>
           <button
             onClick={onClose}
             disabled={isDeleting}
-            className="py-3 px-4 rounded-xl font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 transition-colors"
+            className={`p-2 rounded-xl hover:bg-gray-50 transition-colors text-gray-300 hover:text-gray-500 ${
+              isDeleting ? "cursor-not-allowed" : "cursor-pointer"
+            }`}
           >
-            Cancel
+            <CloseButtonIcon />
           </button>
-          <button
-            onClick={onConfirm}
-            disabled={isDeleting}
-            className="py-3 px-4 rounded-xl font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors shadow-red-200 shadow-lg flex items-center justify-center gap-2"
-          >
-            {isDeleting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              "Delete"
-            )}
-          </button>
+        </div>
+
+        {/* Content */}
+        <div className='px-8 py-8 text-center'>
+          <h3 className='text-lg font-semibold text-gray-800 mb-2'>{title}</h3>
+          <p className='text-gray-500 text-sm mb-10'>{message}</p>
+
+          {/* Buttons */}
+          <div className='flex gap-3 justify-end items-center'>
+            <button
+              onClick={onClose}
+              disabled={isDeleting}
+              className={`py-3 px-6 rounded-xl font-semibold text-[rgb(32,38,130)] bg-white border border-[rgb(32,38,130)] hover:bg-blue-50 transition-all duration-200 active:scale-[0.98] text-sm ${
+                isDeleting ? "cursor-not-allowed" : "cursor-pointer"
+              }`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className={`py-3 px-6 rounded-xl font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors shadow-red-200 shadow-lg flex items-center justify-center gap-2 text-sm ${
+                isDeleting ? "cursor-not-allowed" : "cursor-pointer"
+              }`}
+            >
+              {isDeleting ? (
+                <>
+                  <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin' />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

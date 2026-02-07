@@ -26,7 +26,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className='sticky top-0 z-[1000] flex justify-between items-center px-8 py-5 bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm transition-all duration-300'>
+    <nav className='sticky top-0 z-[1000] flex justify-between items-center px-8 py-5 bg-[rgb(32,38,130)] backdrop-blur-xl border-b border-gray-100 shadow-sm transition-all duration-300'>
       <Link
         href='/profile'
         className='flex items-center gap-3 no-underline group'
@@ -46,36 +46,39 @@ export default function Navbar() {
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
           </svg>
         </div> */}
-        <div className='font-black text-xl tracking-tighter text-gray-900 flex flex-col leading-none'>
+        <div className='font-black text-xl tracking-tighter text-white flex flex-col leading-none'>
           <span>Earth Carbon Registry</span>
         </div>
       </Link>
 
       <div className='flex items-center gap-6'>
         {loading ? (
-          <div className='flex items-center gap-2 text-gray-400'>
-            <div className='w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin'></div>
+          <div className='flex items-center gap-2 text-gray-200'>
+            <div className='w-4 h-4 border-2 border-gray-400 border-t-white rounded-full animate-spin'></div>
             <span className='text-sm font-bold uppercase tracking-widest'>
               Loading
             </span>
           </div>
         ) : user ? (
-          <div className='flex items-center gap-6 relative' ref={dropdownRef}>
+          <div
+            className='flex items-center gap-6 relative cursor-pointer'
+            ref={dropdownRef}
+          >
             <div
-              className='hidden md:flex flex-col items-end cursor-pointer'
+              className='hidden md:flex flex-col items-end'
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-              <span className='text-sm font-black text-gray-900 leading-none mb-1'>
+              <span className='text-sm font-black text-white leading-none mb-1'>
                 {user.displayName || "User Account"}
               </span>
-              <span className='text-[11px] font-bold text-gray-400 tracking-wider'>
+              <span className='text-[11px] font-bold text-gray-300 tracking-wider'>
                 {user.email}
               </span>
             </div>
 
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className='relative group focus:outline-none'
+              className='relative group focus:outline-none cursor-pointer'
             >
               <div
                 className={`absolute inset-0 bg-blue-500/20 blur-lg rounded-full transition-opacity duration-300 ${isDropdownOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
@@ -121,9 +124,9 @@ export default function Navbar() {
 
                 <button
                   onClick={logout}
-                  className='w-full flex items-center gap-3 px-5 py-4 rounded-[1.25rem] text-red-500 font-black text-xs uppercase tracking-widest hover:bg-red-50 transition-colors duration-200 group/item'
+                  className='w-full flex items-center gap-3 px-5 py-4 rounded-[1.25rem] text-red-500 font-black text-xs uppercase tracking-widest hover:bg-red-50 transition-colors duration-200 group/item cursor-pointer'
                 >
-                  <div className='p-2 bg-red-100 rounded-lg group-hover/item:bg-red-200 transition-colors'>
+                  <div className='p-2 bg-red-100 rounded-lg group-hover/item:bg-red-200 transition-colors '>
                     <SignOutIcon />
                   </div>
                   Sign Out
@@ -134,7 +137,7 @@ export default function Navbar() {
         ) : (
           <Link
             href='/signin'
-            className='px-7 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-xl shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:scale-95 transition-all duration-300'
+            className='px-7 py-3 bg-white text-[rgb(32,38,130)] font-black text-xs uppercase tracking-widest rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-300'
           >
             Sign In
           </Link>
