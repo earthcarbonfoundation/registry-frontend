@@ -6,14 +6,21 @@ import DropDownIcon from "./svg/DropDownIcon";
 import { useActionModal, ACTION_TYPES } from "../hooks/useActionModal";
 import LocationAutocomplete from "./LocationAutocomplete";
 
+interface LocationData {
+  address: string;
+  lat?: number;
+  lng?: number;
+}
+
 interface ActionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => Promise<void>;
   isSubmitting?: boolean;
+  initialData?: any;
 }
 
-const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
+const ActionModal: React.FC<ActionModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
@@ -22,7 +29,7 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
 }) => {
   const { formik } = useActionModal({ initialData, onSubmit, isOpen });
 
-  const handlePlaceSelect = (location: any) => {
+  const handlePlaceSelect = (location: LocationData) => {
     formik.setFieldValue("address", location.address);
     if (location.lat && location.lng) {
       formik.setFieldValue("lat", location.lat);
@@ -154,8 +161,6 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
                 />
               </div>
             </div>
-
-            {/* Google Map View */}
 
             <div className='flex gap-3 pt-6 justify-end items-center'>
               <button

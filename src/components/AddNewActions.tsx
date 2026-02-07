@@ -5,13 +5,8 @@ import ActionModal from "@/components/ActionModal";
 import ActionRecordTable from "./ActionRecordTable";
 import AddIcon from "./svg/AddIcon";
 import { useAddNewAction } from "@/hooks/useAddNewAction";
-import GoogleMapVIew from "./GoogleMapVIew";
 
-export default function ActionsPage({
-  locations,
-}: {
-  locations?: { address: string }[];
-}) {
+export default function ActionsPage() {
   const {
     isModalOpen,
     isSubmitting,
@@ -38,10 +33,6 @@ export default function ActionsPage({
 
         {/* Action Table */}
         <ActionRecordTable onEdit={handleEditAction} />
-
-        {/* Locations Section */}
-        {/* <h2 className='text-lg font-bold text-gray-800 mt-8'>Locations</h2>
-        <GoogleMapVIew locations={locations} /> */}
       </div>
 
       <ActionModal

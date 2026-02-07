@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useJsApiLoader } from "@react-google-maps/api";
-
-const GOOGLE_MAPS_LIBRARIES: "places"[] = ["places"];
+import { useGoogleMapsLoader } from "./useGoogleMapsLoader";
 
 interface UseLocationAutocompleteProps {
   value?: string;
@@ -27,12 +25,8 @@ export const useLocationAutocomplete = ({
     onChangeRef.current = onChange;
   });
 
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries: GOOGLE_MAPS_LIBRARIES,
-    language: "en",
-  });
+  // Use shared Google Maps loader to prevent multiple initialization conflicts
+  const { isLoaded, loadError } = useGoogleMapsLoader();
 
   useEffect(() => {
     if (value !== inputValue) {
@@ -53,7 +47,7 @@ export const useLocationAutocomplete = ({
         componentRestrictions: {
           country: "in",
         },
-      }
+      },
     );
 
     const getCityAndCountry = (place: any) => {
@@ -76,7 +70,7 @@ export const useLocationAutocomplete = ({
       const place = autocomplete.getPlace();
       if (!place || !place.geometry || !place.geometry.location) {
         console.warn(
-          "AutocompleteService: The selected place has no geometry."
+          "AutocompleteService: The selected place has no geometry.",
         );
         return;
       }
@@ -101,7 +95,7 @@ export const useLocationAutocomplete = ({
 
     const listener = autocomplete.addListener(
       "place_changed",
-      handlePlaceChanged
+      handlePlaceChanged,
     );
 
     return () => {

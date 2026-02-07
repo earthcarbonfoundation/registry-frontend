@@ -1,90 +1,103 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebaseAdmin";
+import { verifyAuthHeader, handleApiError } from "@/lib/apiAuth";
 import { Timestamp } from "firebase-admin/firestore";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await verifyAuthHeader(request);
+    if (authResult.error) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status },
+      );
     }
 
-    const adminAuth = getAdminAuth();
     const adminDb = getAdminDb();
-
-    const token = authHeader.split("Bearer ")[1];
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const userId = decodedToken.uid;
+    const userId = authResult.userId;
 
     const snapshot = await adminDb
       .collection("carbon_registry_actions")
       .where("userId", "==", userId)
       .get();
 
-    const actions = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      // Convert Firestore Timestamp to simple object or string if needed
-      // but client usually handles it. sending raw milliseconds is safest for JSON
-      createdAt: doc.data().createdAt?.toMillis() || 0,
-    }));
-    
-    // Sort descending
+    const actions = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        // Convert Firestore Timestamp to milliseconds (safest for JSON serialization)
+        createdAt: data.createdAt?.toMillis?.() || 0,
+        updatedAt: data.updatedAt?.toMillis?.() || null,
+      };
+    });
+
+    // Sort by createdAt descending (newest first)
     actions.sort((a, b) => b.createdAt - a.createdAt);
 
     return NextResponse.json({ actions });
   } catch (error: any) {
-    console.error("API GET Actions Error:", error);
-    const message = error.message.includes("Firebase Admin not initialized") 
-        ? "Server Misconfiguration: Missing Firebase Credentials" 
-        : "Internal Server Error";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 },
-    );
+    return handleApiError(error, "GET /api/actions");
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await verifyAuthHeader(request);
+    if (authResult.error) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status },
+      );
     }
 
-    const adminAuth = getAdminAuth();
     const adminDb = getAdminDb();
-
-    const token = authHeader.split("Bearer ")[1];
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const userId = decodedToken.uid;
-    const userEmail = decodedToken.email;
+    const userId = authResult.userId;
+    const userEmail = authResult.userEmail;
 
     const body = await request.json();
-    
-    // Validate body...
-    if (!body.actionType || !body.quantity || !body.unit || !body.address) {
-         return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+
+    // Validate required fields
+    const requiredFields = ["actionType", "quantity", "unit", "address"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(
+          { error: `Missing required field: ${field}` },
+          { status: 400 },
+        );
+      }
+    }
+
+    // Validate data types
+    if (typeof body.quantity !== "number" || body.quantity <= 0) {
+      return NextResponse.json(
+        { error: "Quantity must be a positive number" },
+        { status: 400 },
+      );
     }
 
     const newAction = {
-      ...body,
+      actionType: String(body.actionType).trim(),
+      quantity: Number(body.quantity),
+      unit: String(body.unit).trim(),
+      address: String(body.address).trim(),
+      lat: body.lat ? Number(body.lat) : null,
+      lng: body.lng ? Number(body.lng) : null,
       userId,
       userEmail,
-      createdAt: Timestamp.now(), // Use server-side timestamp
+      createdAt: Timestamp.now(),
     };
 
-    const docRef = await adminDb.collection("carbon_registry_actions").add(newAction);
+    const docRef = await adminDb
+      .collection("carbon_registry_actions")
+      .add(newAction);
 
-    return NextResponse.json({ id: docRef.id, ...newAction });
+    return NextResponse.json({
+      id: docRef.id,
+      ...newAction,
+      createdAt: newAction.createdAt.toMillis(),
+    });
   } catch (error: any) {
-    console.error("API POST Action Error:", error);
-    const message = error.message.includes("Firebase Admin not initialized") 
-        ? "Server Misconfiguration: Missing Firebase Credentials" 
-        : "Internal Server Error";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 },
-    );
+    return handleApiError(error, "POST /api/actions");
   }
 }

@@ -13,7 +13,7 @@ import {
   signOut,
   User,
 } from "firebase/auth";
-import { auth, googleProvider } from "@/firebaseConfig";
+import { auth, googleProvider } from "@/lib/firebaseConfig";
 
 interface AuthContextType {
   user: User | null;
@@ -29,8 +29,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      // When a user signs in on the client, exchange their ID token for
+      // a secure, HttpOnly session cookie on the server. This avoids storing
+      // the token in localStorage or a client-accessible cookie.
+      if (user) {
+        try {
+          const idToken = await user.getIdToken();
+          await fetch("/api/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken }),
+          });
+        } catch (err) {
+          console.error("Failed to establish server session cookie:", err);
+        }
+      } else {
+        // Clear server session when user becomes null (signed out)
+        try {
+          await fetch("/api/session", { method: "DELETE" });
+        } catch (err) {
+          // ignore
+        }
+      }
+
       setLoading(false);
     });
 
@@ -47,6 +70,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      // Clear server session cookie, then sign out client
+      try {
+        await fetch("/api/session", { method: "DELETE" });
+      } catch (err) {
+        // ignore
+      }
       await signOut(auth);
     } catch (error) {
       console.error("Logout failed:", error);

@@ -6,28 +6,17 @@ import {
   ActionRecord,
 } from "@/hooks/useActionRecordTable";
 import { Timestamp } from "firebase/firestore";
-
-interface ActionRecordTableProps {
-  onEdit: (record: ActionRecord) => void;
-}
-
-const ACTION_LABELS: Record<string, string> = {
-  solar_rooftop: "Solar Rooftop",
-  swh: "Solar Water Heater",
-  rwh: "Rainwater Harvesting",
-  waterless_urinal: "Waterless Urinal",
-  wastewater_recycling: "Wastewater Recycling",
-  biogas: "Biogas (Food Waste)",
-  led_replacement: "LED Replacement",
-  tree_plantation: "Tree Plantation",
-};
-
+import { ACTION_LABELS } from "@/lib/constants";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { useState } from "react";
 import DeleteIcon from "./svg/DeleteIcon";
 import EditIcon from "./svg/EditIcon";
 import ActionNotFoundIcon from "./svg/ActionNotFoundIcon";
 import GoogleMapVIew from "./GoogleMapVIew";
+
+interface ActionRecordTableProps {
+  onEdit: (record: ActionRecord) => void;
+}
 
 export default function ActionRecordTable({ onEdit }: ActionRecordTableProps) {
   const {
