@@ -3,27 +3,13 @@
 import { useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { ACTION_TYPES } from "@/lib/constants";
 
 declare global {
   interface Window {
     google: any;
   }
 }
-
-export const ACTION_TYPES = [
-  { value: "solar_rooftop", label: "Solar Rooftop", unit: "kW" },
-  { value: "swh", label: "Solar Water Heater", unit: "liters" },
-  { value: "rwh", label: "Rainwater Harvesting", unit: "m³" },
-  { value: "waterless_urinal", label: "Waterless Urinal", unit: "units" },
-  {
-    value: "wastewater_recycling",
-    label: "Wastewater Recycling",
-    unit: "m³/day",
-  },
-  { value: "biogas", label: "Biogas (Food Waste)", unit: "kg/day" },
-  { value: "led_replacement", label: "LED Replacement", unit: "bulbs" },
-  { value: "tree_plantation", label: "Tree Plantation", unit: "trees" },
-];
 
 interface UseActionModalProps {
   initialData?: any;
@@ -113,3 +99,6 @@ export const useActionModal = ({
     ACTION_TYPES,
   };
 };
+
+/* Re-export for backward compatibility */
+export { ACTION_TYPES };

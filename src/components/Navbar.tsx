@@ -31,21 +31,6 @@ export default function Navbar() {
         href='/profile'
         className='flex items-center gap-3 no-underline group'
       >
-        {/* <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:rotate-6 transition-transform duration-300">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-          </svg>
-        </div> */}
         <div className='font-black text-xl tracking-tighter text-white flex flex-col leading-none'>
           <span>Earth Carbon Registry</span>
         </div>
@@ -101,13 +86,6 @@ export default function Navbar() {
                   </span>
                 )}
               </div>
-              {/* Old avatar code:
-              <img
-                src={"/images/avatar.svg"}
-                alt='Profile'
-                className={`relative w-11 h-11 rounded-2xl bg-gray-100 border-2 shadow-md object-cover transition-all duration-300 ${isDropdownOpen ? "border-blue-500 scale-95" : "border-white"}`}
-              />
-              */}
             </button>
 
             {/* Dropdown Menu */}

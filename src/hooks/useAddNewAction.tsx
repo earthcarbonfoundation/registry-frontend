@@ -1,7 +1,7 @@
 "use client";
 import { toast } from "react-toastify";
 import { useState } from "react";
-import { db } from "@/firebaseConfig";
+import { db } from "@/lib/firebaseConfig";
 import {
   collection,
   addDoc,
@@ -11,24 +11,43 @@ import {
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
 
+interface ActionData {
+  actionType: string;
+  quantity: number;
+  unit: string;
+  address: string;
+  lat?: number | null;
+  lng?: number | null;
+}
+
+interface EditingAction extends ActionData {
+  id: string;
+  createdAt?: any;
+  userId?: string;
+  userEmail?: string;
+}
+
 export const useAddNewAction = () => {
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingAction, setEditingAction] = useState<any>(null);
+  const [editingAction, setEditingAction] = useState<EditingAction | null>(
+    null,
+  );
 
   const handleOpenModal = () => {
     setEditingAction(null);
     setIsModalOpen(true);
   };
+
   const handleCloseModal = () => setIsModalOpen(false);
 
-  const handleEditAction = (action: any) => {
+  const handleEditAction = (action: EditingAction) => {
     setEditingAction(action);
     setIsModalOpen(true);
   };
 
-  const handleSubmitAction = async (data: any) => {
+  const handleSubmitAction = async (data: ActionData) => {
     if (!user) {
       toast.error("You must be signed in to submit an action.");
       return;
@@ -37,34 +56,36 @@ export const useAddNewAction = () => {
     setIsSubmitting(true);
 
     try {
-      if (editingAction) {
+      if (editingAction && editingAction.id) {
         const docRef = doc(db, "carbon_registry_actions", editingAction.id);
         await updateDoc(docRef, {
-          ...data,
-          quantity: parseFloat(data.quantity),
+          actionType: data.actionType,
+          quantity: Number(data.quantity),
+          unit: data.unit,
+          address: data.address,
+          lat: data.lat || null,
+          lng: data.lng || null,
           updatedAt: serverTimestamp(),
         });
         console.log("Action updated with ID:", editingAction.id);
       } else {
         await addDoc(collection(db, "carbon_registry_actions"), {
-          ...data,
-          quantity: parseFloat(data.quantity), // Ensure quantity is a number
+          actionType: data.actionType,
+          quantity: Number(data.quantity),
+          unit: data.unit,
+          address: data.address,
+          lat: data.lat || null,
+          lng: data.lng || null,
           userId: user.uid,
           userEmail: user.email,
           createdAt: serverTimestamp(),
         });
       }
 
-      // STOP LOADING BEFORE TOAST
       setIsSubmitting(false);
       handleCloseModal();
 
-      // Ideally we should refresh the list here.
-      // For now, since table is separate, a reload might be needed or event bus.
-      // But standard practice is usually to reload page or use SWR/React Query.
-      // We'll rely on a window reload for absolute safety until shared state is added.
-      // window.location.reload(); // Removed as client-side updates don't require full page reload
-
+      // Show success toast after brief delay
       setTimeout(() => {
         toast.success(
           editingAction
@@ -74,7 +95,7 @@ export const useAddNewAction = () => {
       }, 100);
     } catch (error: any) {
       setIsSubmitting(false);
-      console.error("Error adding document: ", error);
+      console.error("Error submitting action: ", error);
 
       if (error.message && error.message.includes("offline")) {
         toast.error("Network Error: Please check your internet connection.");

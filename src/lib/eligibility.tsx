@@ -1,3 +1,9 @@
+/**
+ * Evaluate project eligibility for carbon credits
+ *
+ * @param project - Project object with ownership, baseline_type, and commissioning_date
+ * @returns Eligibility status (yes, no, conditional) with reason
+ */
 export function evaluateEligibility(project: any) {
   const nowDateTime = new Date().toISOString();
   const nowDate = new Date(nowDateTime.split("T")[0]);
@@ -12,7 +18,7 @@ export function evaluateEligibility(project: any) {
   if (new Date(project.commissioning_date) < nowDate) {
     return {
       status: "no",
-      reason: "Commision date to be in the past",
+      reason: "Commission date to be in the past",
     };
   }
 

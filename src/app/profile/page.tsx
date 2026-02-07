@@ -3,13 +3,10 @@
 import React from "react";
 import Navbar from "@/components/Navbar";
 import ActionsPage from "@/components/AddNewActions";
-import GoogleMapVIew from "@/components/GoogleMapVIew";
 import { useProfile } from "@/hooks/useProfile";
-import { useActionRecordTable } from "@/hooks/useActionRecordTable";
 
 export default function ProfilePage() {
   const { user, loading } = useProfile();
-  const { actions } = useActionRecordTable();
 
   if (loading) {
     return (
@@ -31,7 +28,7 @@ export default function ProfilePage() {
   return (
     <>
       <Navbar />
-      <ActionsPage locations={actions} />
+      <ActionsPage />
     </>
   );
 }

@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
-import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import Providers from "@/components/Providers";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -20,10 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <AuthProvider>
-          {children}
-          <ToastContainer position='top-right' autoClose={3000} />
-        </AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

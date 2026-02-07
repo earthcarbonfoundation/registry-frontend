@@ -1,23 +1,23 @@
-import { NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebaseAdmin";
+import { NextResponse, NextRequest } from "next/server";
+import { getAdminDb } from "@/lib/firebaseAdmin";
+import { verifyAuthHeader, handleApiError } from "@/lib/apiAuth";
 import { Timestamp } from "firebase-admin/firestore";
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await verifyAuthHeader(request);
+    if (authResult.error) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status },
+      );
     }
 
-    const adminAuth = getAdminAuth();
     const adminDb = getAdminDb();
-
-    const token = authHeader.split("Bearer ")[1];
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const userId = decodedToken.uid;
+    const userId = authResult.userId;
     const { id } = params;
 
     const docRef = adminDb.collection("carbon_registry_actions").doc(id);
@@ -27,49 +27,72 @@ export async function PUT(
       return NextResponse.json({ error: "Action not found" }, { status: 404 });
     }
 
-    if (doc.data()?.userId !== userId) {
+    const docData = doc.data();
+    if (docData?.userId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const updateData = {
-      ...body,
+
+    // Validate data if present
+    if (
+      body.quantity !== undefined &&
+      (typeof body.quantity !== "number" || body.quantity <= 0)
+    ) {
+      return NextResponse.json(
+        { error: "Quantity must be a positive number" },
+        { status: 400 },
+      );
+    }
+
+    // Only allow certain fields to be updated
+    const allowedFields = [
+      "actionType",
+      "quantity",
+      "unit",
+      "address",
+      "lat",
+      "lng",
+    ];
+    const updateData: any = {
       updatedAt: Timestamp.now(),
     };
 
-    // Remove protected fields from update if accidentally sent
-    delete updateData.userId;
-    delete updateData.createdAt;
-    delete updateData.id;
+    for (const field of allowedFields) {
+      if (field in body) {
+        if (field === "quantity") {
+          updateData[field] = Number(body[field]);
+        } else if (["lat", "lng"].includes(field)) {
+          updateData[field] = body[field] ? Number(body[field]) : null;
+        } else {
+          updateData[field] = String(body[field]).trim();
+        }
+      }
+    }
 
     await docRef.update(updateData);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("API PUT Action Error:", error);
-    const message = error.message.includes("Firebase Admin not initialized")
-      ? "Server Misconfiguration: Missing Firebase Credentials"
-      : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "PUT /api/actions/[id]");
   }
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await verifyAuthHeader(request);
+    if (authResult.error) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status },
+      );
     }
 
-    const adminAuth = getAdminAuth();
     const adminDb = getAdminDb();
-
-    const token = authHeader.split("Bearer ")[1];
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const userId = decodedToken.uid;
+    const userId = authResult.userId;
     const { id } = params;
 
     const docRef = adminDb.collection("carbon_registry_actions").doc(id);
@@ -79,7 +102,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Action not found" }, { status: 404 });
     }
 
-    if (doc.data()?.userId !== userId) {
+    const docData = doc.data();
+    if (docData?.userId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -87,10 +111,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("API DELETE Action Error:", error);
-    const message = error.message.includes("Firebase Admin not initialized")
-      ? "Server Misconfiguration: Missing Firebase Credentials"
-      : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "DELETE /api/actions/[id]");
   }
 }

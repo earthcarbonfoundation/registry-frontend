@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
-import { useGoogleMap } from "@/hooks/useGoogleMap";
-import { ACTION_TYPES } from "@/hooks/useActionModal";
+import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
+import { ACTION_LABELS } from "@/lib/constants";
 import NoLocationIcon from "./svg/NoLocationIcon";
 import MarkerInfoWindow from "./MarkerInfoWindow";
 
@@ -12,25 +12,54 @@ const containerStyle = {
 };
 
 interface GoogleMapViewProps {
-  address?: string;
   locations?: any[];
 }
 
-function GoogleMapView({ address, locations }: GoogleMapViewProps) {
+function GoogleMapView({ locations }: GoogleMapViewProps) {
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState<number | null>(
     null,
   );
-  const {
-    isLoaded,
-    loadError,
-    map,
-    markers,
-    center,
-    loading,
-    error,
-    onLoad,
-    onUnmount,
-  } = useGoogleMap({ address, locations });
+
+  // Use shared Google Maps loader to prevent multiple initialization conflicts
+  const { isLoaded, loadError } = useGoogleMapsLoader();
+
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+
+  // Calculate markers and center directly from locations array
+  const { markers, center } = useMemo(() => {
+    if (!locations || locations.length === 0) {
+      return { markers: [], center: null };
+    }
+
+    // Extract lat/lng from locations (already provided by Firebase)
+    const markerData = locations.map((loc: any) => ({
+      position: { lat: loc.lat, lng: loc.lng },
+      data: loc,
+    }));
+
+    // Use first location as center
+    const mapCenter = {
+      lat: markerData[0].position.lat,
+      lng: markerData[0].position.lng,
+    };
+
+    // Fit bounds for multiple markers
+    if (markerData.length > 1 && map && window.google) {
+      const bounds = new window.google.maps.LatLngBounds();
+      markerData.forEach((m: any) => bounds.extend(m.position));
+      setTimeout(() => map.fitBounds(bounds), 0);
+    }
+
+    return { markers: markerData, center: mapCenter };
+  }, [locations, map]);
+
+  const onLoad = (mapInstance: google.maps.Map) => {
+    setMap(mapInstance);
+  };
+
+  const onUnmount = () => {
+    setMap(null);
+  };
 
   const formatValue = (value: any, key: string): string => {
     if (value === null || value === undefined) return "N/A";
@@ -48,8 +77,7 @@ function GoogleMapView({ address, locations }: GoogleMapViewProps) {
   };
 
   const getActionLabel = (actionType: string): string => {
-    const action = ACTION_TYPES.find((a) => a.value === actionType);
-    return action?.label || actionType;
+    return ACTION_LABELS[actionType] || actionType;
   };
 
   if (loadError) {
@@ -63,24 +91,7 @@ function GoogleMapView({ address, locations }: GoogleMapViewProps) {
   if (!isLoaded) {
     return (
       <div className='w-full h-[400px] bg-gray-100 rounded-[1.5rem] mt-6 flex items-center justify-center text-gray-400'>
-        Loading API...
-      </div>
-    );
-  }
-
-  // Show loading state while fetching coordinates
-  if (loading && !center) {
-    return (
-      <div className='w-full h-[400px] bg-gray-100 rounded-[1.5rem] mt-6 flex items-center justify-center text-gray-400'>
-        Finding location...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className='w-full h-[400px] bg-red-50 rounded-[1.5rem] mt-6 flex items-center justify-center text-red-500 border border-red-100'>
-        {error}
+        Loading map...
       </div>
     );
   }
