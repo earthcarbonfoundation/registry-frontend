@@ -3,7 +3,12 @@ import { useJsApiLoader } from "@react-google-maps/api";
 
 interface UseGoogleMapProps {
   address?: string;
-  locations?: { address: string }[];
+  locations?: any[];
+}
+
+interface MarkerData {
+  position: google.maps.LatLngLiteral;
+  data?: any;
 }
 
 const libraries: "places"[] = ["places"];
@@ -17,7 +22,7 @@ export const useGoogleMap = ({ address, locations }: UseGoogleMapProps) => {
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [markers, setMarkers] = useState<google.maps.LatLngLiteral[]>([]);
+  const [markers, setMarkers] = useState<MarkerData[]>([]);
   const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,13 +39,13 @@ export const useGoogleMap = ({ address, locations }: UseGoogleMapProps) => {
     const fetchCoordinates = async () => {
       // Determine what to fetch
       let payload = {};
-      
+
       const hasLocations = locations && locations.length > 0;
-      
+
       if (hasLocations) {
-         const addresses = locations.map(l => l.address).filter(Boolean);
-         if(addresses.length === 0) return;
-         payload = { addresses };
+        const addresses = locations.map((l) => l.address).filter(Boolean);
+        if (addresses.length === 0) return;
+        payload = { addresses };
       } else if (address) {
         payload = { address };
       } else {
@@ -70,36 +75,43 @@ export const useGoogleMap = ({ address, locations }: UseGoogleMapProps) => {
         const positions = data.positions;
 
         if (positions && positions.length > 0) {
-           // Simplify positions for the map (just lat/lng)
-           const mapPositions = positions.map((p: any) => ({ lat: p.lat, lng: p.lng }));
-           
-           setMarkers(mapPositions);
-           
-           if(mapPositions.length === 1) {
-             setCenter(mapPositions[0]);
-             if(map) {
-                map.panTo(mapPositions[0]);
-                map.setZoom(12);
-             }
-           } else if (map) {
-             // Multi-marker fit bounds
-             // We need to wait for the map to be ready and Google API to be loaded
-             if(window.google) {
-                const bounds = new window.google.maps.LatLngBounds();
-                mapPositions.forEach((pos: google.maps.LatLngLiteral) => bounds.extend(pos));
-                map.fitBounds(bounds);
-             }
-           }
-           // Use the first result as center if multiple, just to have a default center
-           if(mapPositions.length > 1 && !center){
-               setCenter(mapPositions[0]);
-           }
+          // Create marker objects with position and associated location data
+          const markerDataArray: MarkerData[] = positions.map(
+            (p: any, idx: number) => ({
+              position: { lat: p.lat, lng: p.lng },
+              data: locations ? locations[idx] : undefined,
+            }),
+          );
 
+          setMarkers(markerDataArray);
+
+          const mapPositions = markerDataArray.map((m) => m.position);
+
+          if (mapPositions.length === 1) {
+            setCenter(mapPositions[0]);
+            if (map) {
+              map.panTo(mapPositions[0]);
+              map.setZoom(12);
+            }
+          } else if (map) {
+            // Multi-marker fit bounds
+            // We need to wait for the map to be ready and Google API to be loaded
+            if (window.google) {
+              const bounds = new window.google.maps.LatLngBounds();
+              mapPositions.forEach((pos: google.maps.LatLngLiteral) =>
+                bounds.extend(pos),
+              );
+              map.fitBounds(bounds);
+            }
+          }
+          // Use the first result as center if multiple, just to have a default center
+          if (mapPositions.length > 1 && !center) {
+            setCenter(mapPositions[0]);
+          }
         } else {
-             // No valid positions found
-             if(address) setError("Unable to locate address");
+          // No valid positions found
+          if (address) setError("Unable to locate address");
         }
-
       } catch (err: any) {
         console.error("Error fetching map coordinates:", err);
         setError(err.message || "Error loading map data");
