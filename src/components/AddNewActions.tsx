@@ -23,12 +23,13 @@ export default function ActionsPage({
   } = useAddNewAction();
 
   return (
-    <div className='min-h-[calc(100vh-82px)] bg-gray-200 p-8'>
-      <div className='max-w-5xl mx-auto space-y-6'>
-        <div className='flex justify-end'>
+    <div className='min-h-[calc(100vh-82px)] bg-gray-50 px-8 py-8'>
+      <div className='w-full space-y-6'>
+        <div className='flex justify-between items-center'>
+          <h2 className='text-lg font-bold text-gray-800'>Actions</h2>
           <button
             onClick={handleOpenModal}
-            className='flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] shadow-sm active:bg-gray-100'
+            className='flex items-center justify-center gap-2 px-6 py-3 bg-[rgb(32,38,130)] border border-[rgb(32,38,130)] text-white font-semibold rounded-xl hover:bg-[rgb(25,30,110)] transition-all duration-200 active:scale-[0.98] shadow-sm hover:-translate-y-0.5 cursor-pointer'
           >
             <AddIcon />
             Add New Action
@@ -38,7 +39,9 @@ export default function ActionsPage({
         {/* Action Table */}
         <ActionRecordTable onEdit={handleEditAction} />
 
-        <GoogleMapVIew locations={locations} />
+        {/* Locations Section */}
+        {/* <h2 className='text-lg font-bold text-gray-800 mt-8'>Locations</h2>
+        <GoogleMapVIew locations={locations} /> */}
       </div>
 
       <ActionModal

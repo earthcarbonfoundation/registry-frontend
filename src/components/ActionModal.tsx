@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import PlusIcon from "./svg/PlusIcon";
 import CloseButtonIcon from "./svg/CloseButtonIcon";
 import DropDownIcon from "./svg/DropDownIcon";
 import { useActionModal, ACTION_TYPES } from "../hooks/useActionModal";
@@ -33,6 +32,8 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
 
   if (!isOpen) return null;
 
+  const isEditMode = !!initialData;
+
   return (
     <div
       className='fixed inset-0 bg-gray-900/10 backdrop-blur-sm flex justify-center items-center z-[1000] p-4 transition-all duration-300'
@@ -42,27 +43,20 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
         className='bg-white rounded-[2rem] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-gray-100 duration-300 scale-100 relative max-h-[90vh] '
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className='absolute top-6 right-6 p-2 rounded-xl hover:bg-gray-50 transition-colors text-gray-300 hover:text-gray-500 z-10'
-        >
-          <CloseButtonIcon />
-        </button>
+        {/* Header with Title and Close Button */}
+        <div className='flex items-center justify-between px-8 pt-8 pb-6 border-b border-gray-100'>
+          <h2 className='text-xl font-semibold text-gray-800 tracking-tight'>
+            {isEditMode ? "Edit Action" : "Add New Action"}
+          </h2>
+          <button
+            onClick={onClose}
+            className='p-2 rounded-xl hover:bg-gray-50 transition-colors text-gray-300 hover:text-gray-500 cursor-pointer'
+          >
+            <CloseButtonIcon />
+          </button>
+        </div>
 
-        <div className='px-8 pt-12 pb-10'>
-          <div className='mb-10 text-center'>
-            <div className='w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 mx-auto mb-4 border border-gray-100/50'>
-              <PlusIcon />
-            </div>
-            <h2 className='text-2xl font-semibold text-gray-800 tracking-tight mb-2'>
-              Add New Action
-            </h2>
-            <p className='text-gray-400 text-sm font-medium'>
-              Record your environmental impact.
-            </p>
-          </div>
-
+        <div className='px-8 pt-8 pb-10'>
           <form onSubmit={formik.handleSubmit} className='space-y-6'>
             <div className='space-y-2'>
               <label
@@ -163,10 +157,10 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
 
             {/* Google Map View */}
 
-            <div className='flex gap-3 pt-6'>
+            <div className='flex gap-3 pt-6 justify-end items-center'>
               <button
                 type='button'
-                className='flex-1 py-4 px-6 rounded-xl font-semibold text-gray-400 bg-white border border-gray-100 hover:bg-gray-50 transition-all duration-200 active:scale-[0.98] text-sm'
+                className='py-3 px-6 rounded-xl font-semibold text-[rgb(32,38,130)] bg-white border border-[rgb(32,38,130)] hover:bg-blue-50 transition-all duration-200 active:scale-[0.98] text-sm cursor-pointer'
                 onClick={onClose}
               >
                 Cancel
@@ -174,17 +168,19 @@ const ActionModal: React.FC<ActionModalProps & { initialData?: any }> = ({
               <button
                 type='submit'
                 disabled={isSubmitting}
-                className={`flex-[1.5] py-4 px-6 rounded-xl font-semibold text-white shadow-sm transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
+                className={`py-3 px-6 rounded-xl font-semibold text-white shadow-sm transition-all duration-200 text-sm flex items-center justify-center gap-2 ${
                   isSubmitting
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gray-800 hover:bg-gray-900 hover:-translate-y-0.5 active:scale-[0.98]"
+                    : "bg-[rgb(32,38,130)] hover:bg-[rgb(25,30,110)] hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer"
                 }`}
               >
                 {isSubmitting ? (
                   <>
                     <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin' />
-                    Submitting...
+                    {isEditMode ? "Updating..." : "Submitting..."}
                   </>
+                ) : isEditMode ? (
+                  "Update"
                 ) : (
                   "Submit"
                 )}
