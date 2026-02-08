@@ -1,14 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import GoogleIcon from "@/components/svg/GoogleIcon";
 import { useSignIn } from "@/hooks/useSignIn";
+import { useAuth } from "@/context/AuthContext";
 import PublicShell from "@/components/PublicShell";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const { user: authUser, loading: authLoading } = useAuth();
   const { loading, handleSignIn } = useSignIn();
 
-  if (loading) {
+  // Redirect to profile if already authenticated
+  useEffect(() => {
+    if (!authLoading && authUser) {
+      router.replace("/profile");
+    }
+  }, [authUser, authLoading, router]);
+
+  if (loading || authLoading) {
     return (
       <div className='flex justify-center items-center min-h-screen bg-white'>
         <div className='flex flex-col items-center gap-3'>

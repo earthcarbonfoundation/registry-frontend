@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Middleware to handle route protection and authentication
+ * Middleware to handle route protection based on session cookies
  *
- * Protected routes (require session):
+ * Session cookie is created by AuthContext when user logs in via Firebase.
+ * Cookie contains uid and email, validated before trusting it.
+ * Actual auth verification also happens client-side via Firebase SDK.
+ *
+ * Protected routes (require session cookie):
  * - /profile (private user profile)
  *
- * Auth routes (public, redirect if authenticated):
+ * Auth routes (redirect if already authenticated):
  * - /signin (sign in page)
  *
  * Public routes:
@@ -16,8 +20,26 @@ import { NextRequest, NextResponse } from "next/server";
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Check if user has a server-managed session cookie
+  // Get session cookie
   const sessionCookie = request.cookies.get("session")?.value;
+
+  // Validate session cookie format
+  let isValidSession = false;
+  if (sessionCookie) {
+    try {
+      const data = JSON.parse(decodeURIComponent(sessionCookie));
+      // Validate cookie has required fields
+      if (data.uid && data.email) {
+        isValidSession = true;
+      } else {
+        console.warn(
+          "[Middleware] Invalid cookie structure - missing uid or email",
+        );
+      }
+    } catch (error) {
+      console.warn("[Middleware] Failed to parse session cookie:", error);
+    }
+  }
 
   // Protected routes (require authentication)
   const protectedRoutes = ["/profile"];
@@ -27,25 +49,20 @@ export function middleware(request: NextRequest) {
 
   // If accessing a protected route
   if (protectedRoutes.includes(pathname)) {
-    if (!sessionCookie) {
-      // No session cookie, redirect to home
+    if (!isValidSession) {
+      // No valid session cookie, redirect to signin
       console.warn(`[Middleware] Unauthorized access attempt to ${pathname}`);
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL("/signin", request.url));
     }
-    // Has session cookie, allow access
+    // Has valid session cookie, allow access (component will verify Firebase auth)
     return NextResponse.next();
   }
 
   // If accessing auth routes
   if (authRoutes.includes(pathname)) {
-    if (sessionCookie) {
-      // Already authenticated, redirect to profile
-      console.info(
-        `[Middleware] Authenticated user redirected from ${pathname} to /profile`,
-      );
-      return NextResponse.redirect(new URL("/profile", request.url));
-    }
-    // Not authenticated, allow access to signin
+    // Allow access to signin page regardless of session
+    // Component will verify Firebase auth and redirect to /profile if authenticated
+    // This prevents redirect loops between /signin and /profile
     return NextResponse.next();
   }
 

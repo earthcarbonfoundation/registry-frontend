@@ -13,6 +13,7 @@ import {
   signOut,
   User,
 } from "firebase/auth";
+import { toast } from "react-toastify";
 import { auth, googleProvider } from "@/lib/firebaseConfig";
 
 interface AuthContextType {
@@ -29,33 +30,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      // When a user signs in on the client, exchange their ID token for
-      // a secure, HttpOnly session cookie on the server. This avoids storing
-      // the token in localStorage or a client-accessible cookie.
-      if (user) {
-        try {
-          const idToken = await user.getIdToken();
-          await fetch("/api/session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idToken }),
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        setUser(user);
+        // Set cookie when user is authenticated
+        if (user) {
+          const sessionData = JSON.stringify({
+            uid: user.uid,
+            email: user.email,
           });
-        } catch (err) {
-          console.error("Failed to establish server session cookie:", err);
+          document.cookie = `session=${encodeURIComponent(sessionData)}; path=/; max-age=${7 * 24 * 60 * 60}`;
         }
-      } else {
-        // Clear server session when user becomes null (signed out)
-        try {
-          await fetch("/api/session", { method: "DELETE" });
-        } catch (err) {
-          // ignore
-        }
-      }
-
-      setLoading(false);
-    });
+        setLoading(false);
+      },
+      (error) => {
+        // Auth state listener error callback
+        console.error("Auth listener error:", error);
+        setLoading(false);
+      },
+    );
 
     return () => unsubscribe();
   }, []);
@@ -64,21 +58,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
+      if (error.code === "auth/popup-closed-by-user") {
+        console.log("Login popup closed by user");
+        return;
+      }
       console.error("Login failed:", error);
+      toast.error(error.message || "Failed to sign in with Google");
     }
   };
 
   const logout = async () => {
     try {
-      // Clear server session cookie, then sign out client
-      try {
-        await fetch("/api/session", { method: "DELETE" });
-      } catch (err) {
-        // ignore
-      }
+      // Clear session cookie
+      document.cookie = "session=; path=/; max-age=0";
       await signOut(auth);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Logout failed:", error);
+      toast.error(error.message || "Failed to log out");
     }
   };
 
