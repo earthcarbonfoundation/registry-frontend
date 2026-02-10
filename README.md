@@ -41,19 +41,16 @@ Ensure you have the following installed:
 3.  **Environment Setup**
     Create a `.env` file in the root directory and add the following environment variables (get these values from your Firebase Console and Google Cloud Console):
 
-        ```env
-        # Firebase Configuration
-
+    ```env
+    # Firebase Configuration
     NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
     NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
     NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-    NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id # Google Maps API Key
+    NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+    # Google Maps API Key
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-
-    ```
-
     ```
 
 4.  **Run the Development Server**
@@ -89,14 +86,38 @@ To connect this project to your Firebase project, and set up secrets useing the 
     firebase use <your-project-id>
     ```
 
-5.  **Set Secret Key**
+5.  **Set the Secret Key**
+
+    Run the following command for each environment variable and provide the corresponding value when prompted:
+
+    ```bash
     firebase apphosting:secrets:set FIREBASE_API_KEY
-    Fire this command and paste the secret key value. Make sure your apphosting.yaml has same value mention for the key like
+    firebase apphosting:secrets:set FIREBASE_AUTH_DOMAIN
+    firebase apphosting:secrets:set FIREBASE_PROJECT_ID
+    firebase apphosting:secrets:set FIREBASE_STORAGE_BUCKET
+    firebase apphosting:secrets:set FIREBASE_MESSAGING_SENDER_ID
+    firebase apphosting:secrets:set FIREBASE_APP_ID
+    firebase apphosting:secrets:set GOOGLE_MAPS_API_KEY
+    ```
+
+    In your `apphosting.yaml`, map these secrets to environment variables. The `value` field must match the secret name (key) you used in the command above, and Firebase will automatically map them together:
 
     ```yaml
     env:
       - variable: NEXT_PUBLIC_FIREBASE_API_KEY
         value: FIREBASE_API_KEY
+      - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        value: FIREBASE_AUTH_DOMAIN
+      - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        value: FIREBASE_PROJECT_ID
+      - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        value: FIREBASE_STORAGE_BUCKET
+      - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+        value: FIREBASE_MESSAGING_SENDER_ID
+      - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+        value: FIREBASE_APP_ID
+      - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+        value: GOOGLE_MAPS_API_KEY
     ```
 
 ## Deployment on Firebase App Hosting
@@ -111,27 +132,7 @@ The `apphosting.yaml` file in the root directory manages the build and runtime e
 It allows you to keep sensitive keys (like API keys and Service Account credentials) out of your codebase while still making them accessible to your deployed application securely.
 
 **How to use:**
-When deploying to Firebase App Hosting, ensure you have created secrets in Google Cloud Secret Manager that correspond to the values in `apphosting.yaml` (e.g., `FIREBASE_API_KEY`, `GOOGLE_MAPS_API_KEY`). The `apphosting.yaml` file tells Firebase "Take the secret named `FIREBASE_API_KEY` and expose it as an environment variable named `NEXT_PUBLIC_FIREBASE_API_KEY`".
-
-Example `apphosting.yaml` snippet:
-
-```yaml
-env:
-  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: FIREBASE_API_KEY
-  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    value: FIREBASE_AUTH_DOMAIN
-  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: FIREBASE_PROJECT_ID
-  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    value: FIREBASE_STORAGE_BUCKET
-  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-    value: FIREBASE_MESSAGING_SENDER_ID
-  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: FIREBASE_APP_ID
-  - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    value: GOOGLE_MAPS_API_KEY
-```
+Auto deployment is already set up for this project. To configure secrets, follow the steps outlined in the **Firebase CLI Integration** section above using the `firebase apphosting:secrets:set` command or Google Cloud Secret Manager. Once the secrets are configured, push your changes to the `feat/dev` branch, which will automatically deploy to the server.
 
 ## Folder Structure
 
