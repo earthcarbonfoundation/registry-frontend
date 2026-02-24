@@ -1,16 +1,16 @@
 runtime: nextjs
 env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyCvQjP6B7OG51khhcsNTBum2XtAnFX94I0
+    value: AIzaSyCa5Jly0Y8Bk_bd3Yq7SCLtFYs8UP5ebsA
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    value: earth-carbon--final.firebaseapp.com
+    value: earthcarbonregistry-1e6ba.firebaseapp.com
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: earth-carbon--final
+    value: earthcarbonregistry-1e6ba
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    value: earth-carbon--final.firebasestorage.app
+    value: earthcarbonregistry-1e6ba.firebasestorage.app
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-    value: 506588865863
+    value: 217692090833
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: 1:506588865863:web:eaa3995e4041e7e14e1862
+    value: 1:217692090833:web:c85f69525a395d5c2870f0
   - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     value: AIzaSyBSlKAndSNex1AJqW4DF6zl428eCfWT2UA
