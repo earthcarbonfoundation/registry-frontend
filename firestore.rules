@@ -3,16 +3,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── carbon_registry_actions ──────────────────────────────────────────────
-    // Users can only read/write their own action documents.
-    match /carbon_registry_actions/{actionId} {
-      allow read, delete: if request.auth != null
-        && request.auth.uid == resource.data.userId;
+    // ── actions ──────────────────────────────────────────────────────────────
+    // Public read (required for /verify/[actionId] page — no login needed).
+    // Write access is strictly owner-only.
+    match /actions/{actionId} {
+      allow read: if true; // Public — auditors & partners can verify without login
 
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid;
 
-      allow update: if request.auth != null
+      allow update, delete: if request.auth != null
         && request.auth.uid == resource.data.userId;
     }
 
@@ -24,7 +24,7 @@ service cloud.firestore {
     }
 
     // ── institutions ─────────────────────────────────────────────────────────
-    // Any authenticated user can read institutions.
+    // Auth-only read (can be made public for registry discovery — pending client confirmation).
     // Only the owner (ownerId) can write their institution.
     match /institutions/{institutionId} {
       allow read: if request.auth != null;

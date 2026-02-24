@@ -57,7 +57,7 @@ export const useAddNewAction = () => {
 
     try {
       if (editingAction && editingAction.id) {
-        const docRef = doc(db, "carbon_registry_actions", editingAction.id);
+        const docRef = doc(db, "actions", editingAction.id);
         await updateDoc(docRef, {
           actionType: data.actionType,
           quantity: Number(data.quantity),
@@ -69,7 +69,7 @@ export const useAddNewAction = () => {
         });
         console.log("Action updated with ID:", editingAction.id);
       } else {
-        await addDoc(collection(db, "carbon_registry_actions"), {
+        await addDoc(collection(db, "actions"), {
           actionType: data.actionType,
           quantity: Number(data.quantity),
           unit: data.unit,

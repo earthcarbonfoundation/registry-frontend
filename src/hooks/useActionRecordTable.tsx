@@ -45,7 +45,7 @@ export const useActionRecordTable = () => {
     setLoading(true);
 
     const q = query(
-      collection(db, "carbon_registry_actions"),
+      collection(db, "actions"),
       where("userId", "==", user.uid),
     );
 
@@ -78,7 +78,7 @@ export const useActionRecordTable = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteDoc(doc(db, "carbon_registry_actions", id));
+      await deleteDoc(doc(db, "actions", id));
       toast.success("Action deleted successfully.");
     } catch (error) {
       console.error("Error deleting document: ", error);
