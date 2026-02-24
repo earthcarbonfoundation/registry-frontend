@@ -31,13 +31,25 @@ function GoogleMapView({ locations }: GoogleMapViewProps) {
       return { markers: [], center: null };
     }
 
-    // Extract lat/lng from locations (already provided by Firebase)
-    const markerData = locations.map((loc: any) => ({
-      position: { lat: loc.lat, lng: loc.lng },
+    // Extract valid lat/lng from locations, parsing them directly as numbers
+    const validLocations = locations.filter(
+      (loc: any) => 
+        loc?.lat !== undefined && 
+        loc?.lng !== undefined && 
+        !isNaN(Number(loc.lat)) && 
+        !isNaN(Number(loc.lng))
+    );
+
+    if (validLocations.length === 0) {
+      return { markers: [], center: null };
+    }
+
+    const markerData = validLocations.map((loc: any) => ({
+      position: { lat: Number(loc.lat), lng: Number(loc.lng) },
       data: loc,
     }));
 
-    // Use first location as center
+    // Use first valid location as center
     const mapCenter = {
       lat: markerData[0].position.lat,
       lng: markerData[0].position.lng,
