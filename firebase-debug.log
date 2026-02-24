@@ -1,0 +1,46 @@
+[debug] [2026-02-24T07:04:13.914Z] ----------------------------------------------------------------------
+[debug] [2026-02-24T07:04:13.929Z] Command:       /home/ujjwal-tiwari/.nvm/versions/node/v22.14.0/bin/node /home/ujjwal-tiwari/.npm/_npx/7750544ccf494d8b/node_modules/.bin/firebase login --no-localhost
+[debug] [2026-02-24T07:04:13.931Z] CLI Version:   15.7.0
+[debug] [2026-02-24T07:04:13.932Z] Platform:      linux
+[debug] [2026-02-24T07:04:13.933Z] Node Version:  v22.14.0
+[debug] [2026-02-24T07:04:13.935Z] Time:          Tue Feb 24 2026 12:34:13 GMT+0530 (India Standard Time)
+[debug] [2026-02-24T07:04:13.936Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-24T07:04:13.949Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] i  The Firebase CLI’s MCP server feature can optionally make use of Gemini in Firebase. Learn more about Gemini in Firebase and how it uses your data: https://firebase.google.com/docs/gemini-in-firebase#how-gemini-in-firebase-uses-your-data 
+[debug] [2026-02-24T07:04:16.860Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-02-24T07:04:16.862Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[info] 
+[info] i  Firebase optionally collects CLI and Emulator Suite usage and error reporting information to help improve our products. Data is collected in accordance with Google's privacy policy (https://policies.google.com/privacy) and is not used to identify you. 
+[info] 
+[info] i  To change your preferences at any time, run `firebase logout` and `firebase login` again. 
+[debug] [2026-02-24T07:04:37.281Z] >>> [apiv2][query] POST https://auth.firebase.tools/attest [none]
+[debug] [2026-02-24T07:04:37.282Z] >>> [apiv2][body] POST https://auth.firebase.tools/attest {"session_id":"8b2e1f9b-3c90-4721-b792-a0492135836a"}
+[debug] [2026-02-24T07:04:38.026Z] <<< [apiv2][status] POST https://auth.firebase.tools/attest 200
+[debug] [2026-02-24T07:04:38.027Z] <<< [apiv2][body] POST https://auth.firebase.tools/attest {"token":"B_DFwg-mQeZ9HZTnjcxCQLzZ2sjfuU3z-VCwQYs4vR0"}
+[info] 
+[info] To sign in to the Firebase CLI:
+[info] 
+[info] 1. Take note of your session ID:
+[info] 
+[info]    8B2E1
+[info] 
+[info] 2. Visit the URL below on any device and follow the instructions to get your code:
+[info] 
+[info]    https://auth.firebase.tools/login?code_challenge=cEEVHopzX86RBNALFjjgfEkGYmzUFO2wqbMPtUeXEiU&session=8b2e1f9b-3c90-4721-b792-a0492135836a&attest=B_DFwg-mQeZ9HZTnjcxCQLzZ2sjfuU3z-VCwQYs4vR0
+[info] 
+[info] 3. Paste or enter the authorization code below once you have it:
+[info] 
+[debug] [2026-02-24T07:04:46.121Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (/home/ujjwal-tiwari/.npm/_npx/7750544ccf494d8b/node_modules/@inquirer/core/dist/commonjs/lib/create-prompt.js:101:37)
+    at Interface.emit (node:events:518:28)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1124:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:263:20)
+    at ReadStream.emit (node:events:530:35)
+    at emitKeys (node:internal/readline/utils:370:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+    at ReadStream.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+[error] 
+[error] Error: An unexpected error has occurred.

@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 214, 219, 220;
+    --background-end-rgb: 255, 255, 255;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --foreground-rgb: 255, 255, 255;
+      --background-start-rgb: 0, 0, 0;
+      --background-end-rgb: 0, 0, 0;
+    }
+  }
+
+  body {
+    color: rgb(var(--foreground-rgb));
+    background: white;
+    gray: #f5f5f5;
+    margin: 0;
+    font-family: "Merriweather Sans", sans-serif;
+  }
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: white;
+  gray: #f5f5f5;
+  margin: 0;
+  font-family: "Merriweather Sans", sans-serif;
+}
+/* Google Maps InfoWindow overflow fix */
+.gm-style-iw-d {
+  overflow: auto !important;
+  padding: 0px !important;
+}
+
+.gm-style-iw-d div:first-child {
+  overflow: auto !important;
+}
+
+/* Remove scrollbar space when not needed */
+.gm-style-iw-d > div {
+  overflow: auto !important;
+  /* padding: 8px !important; */
+  /* box-shadow: none !important; */
+  /* margin: 0px !important; */
+}
+
+/* Normalize padding on all sides */
+.gm-style-iw.gm-style-iw-c {
+  /* padding-inline-end: 8px !important; */
+  padding-bottom: 10px !important;
+  padding-top: 10px !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
