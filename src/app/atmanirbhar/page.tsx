@@ -1,5 +1,4 @@
-export default function AtmanirbharPage() {
-return ( <main className="min-h-screen p-10"> <h1 className="text-4xl font-bold">
+( <main className="min-h-screen p-10"> <h1 className="text-4xl font-bold">
 Atmanirbhar Campus Index 2027 </h1>
 
 ```
