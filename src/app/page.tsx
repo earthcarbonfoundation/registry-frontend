@@ -1,4 +1,3 @@
-:::writing{variant="document" id="62184"}
 export default function AtmanirbharPage() {
   return (
     <main className="min-h-screen p-10 max-w-6xl mx-auto">
@@ -126,7 +125,3 @@ export default function AtmanirbharPage() {
     </main>
   );
 }
-:::
-
-```text
-Enhance Atmanirbhar Campus Index landing page
