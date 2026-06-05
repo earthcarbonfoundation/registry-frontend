@@ -141,19 +141,10 @@ export default function AtmanirbharPage() {
           </div>
         </section>
 
-        {/* Footer / Contact */}
-        <section className="text-center bg-gray-800 text-white p-10 rounded-2xl">
-          <h3 className="text-2xl font-bold mb-4">For Institutional Partnerships</h3>
-          <p className="text-lg mb-2">Earth Carbon Foundation</p>
-          <a href="mailto:info@earthcarbonfoundation.org" className="text-green-400 hover:underline text-lg block mb-1">
-            info@earthcarbonfoundation.org
-          </a>
-          <a href="https://www.earthcarbonfoundation.org" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline text-lg">
-            www.earthcarbonfoundation.org
-          </a>
-        </section>
-        
-      </div>
-    </main>
-  );
-}
+              <footer className="mt-12 p-4 text-sm text-gray-500 border-t">
+        Carbon credit issuance depends on methodology eligibility, MRV requirements,
+        registry approval, and host-country authorization. ESG or sustainability
+        actions do not automatically qualify as carbon credits.
+      </footer>
+    );
+  }
