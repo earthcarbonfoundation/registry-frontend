@@ -139,12 +139,19 @@ export default function AtmanirbharPage() {
               <p className="text-center text-gray-500 text-sm mt-6">Applicable after the first year of participation.</p>
             </div>
           </div>
+          
         </section>
-
-              <footer className="mt-12 p-4 text-sm text-gray-500 border-t">
+        
+      <footer className="mt-12 p-4 text-sm text-gray-500 border-t">
         Carbon credit issuance depends on methodology eligibility, MRV requirements,
         registry approval, and host-country authorization. ESG or sustainability
         actions do not automatically qualify as carbon credits.
       </footer>
     );
   }
+        </section>
+        
+      </div>
+    </main>
+  );
+}
