@@ -106,4 +106,54 @@ export default function AtmanirbharPage() {
                 <li className="flex items-center"><span className="text-green-600 mr-2">✓</span> Impact Certificate</li>
                 <li className="flex items-center"><span className="text-green-600 mr-2">✓</span> Benchmarking Report</li>
               </ul>
-              <a href="https://forms.gle/KUszCL7BoPgDi5vF
+              <a href="https://forms.gle/KUszCL7BoPgDi5vF6" target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-colors">
+                Apply Now
+              </a>
+            </div>
+
+            {/* Standard */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+              <h3 className="text-2xl font-bold mb-4 text-center">Standard Participation</h3>
+              <p className="text-4xl font-bold text-center text-gray-800 mb-2">₹75,000</p>
+              <p className="text-center text-gray-500 mb-8">per Institution</p>
+              <ul className="space-y-3 mb-8 text-gray-600">
+                <li className="flex items-center"><span className="text-gray-400 mr-2">✓</span> All standard assessment benefits</li>
+                <li className="flex items-center"><span className="text-gray-400 mr-2">✓</span> Public Registry Profile</li>
+                <li className="flex items-center"><span className="text-gray-400 mr-2">✓</span> Impact Certificate</li>
+              </ul>
+              <a href="https://forms.gle/KUszCL7BoPgDi5vF6" target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition-colors">
+                Register
+              </a>
+            </div>
+
+            {/* Renewal */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+              <h3 className="text-2xl font-bold mb-4 text-center">Annual Renewal</h3>
+              <p className="text-4xl font-bold text-center text-gray-800 mb-2">₹60,000</p>
+              <p className="text-center text-gray-500 mb-8">per Institution / year</p>
+              <ul className="space-y-3 mb-8 text-gray-600">
+                <li className="flex items-center"><span className="text-gray-400 mr-2">✓</span> Continuous benchmarking</li>
+                <li className="flex items-center"><span className="text-gray-400 mr-2">✓</span> Updated Impact Certificates</li>
+                <li className="flex items-center"><span className="text-gray-400 mr-2">✓</span> Maintained Public Listing</li>
+              </ul>
+              <p className="text-center text-gray-500 text-sm mt-6">Applicable after the first year of participation.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer / Contact */}
+        <section className="text-center bg-gray-800 text-white p-10 rounded-2xl">
+          <h3 className="text-2xl font-bold mb-4">For Institutional Partnerships</h3>
+          <p className="text-lg mb-2">Earth Carbon Foundation</p>
+          <a href="mailto:info@earthcarbonfoundation.org" className="text-green-400 hover:underline text-lg block mb-1">
+            info@earthcarbonfoundation.org
+          </a>
+          <a href="https://www.earthcarbonfoundation.org" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline text-lg">
+            www.earthcarbonfoundation.org
+          </a>
+        </section>
+        
+      </div>
+    </main>
+  );
+}
